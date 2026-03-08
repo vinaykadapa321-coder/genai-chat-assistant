@@ -1,0 +1,15 @@
+[
+    {
+        "title": "Reset Password",
+        "content": "Users can reset their password from Settings > Security."
+
+    },
+    {
+        "title": "Account Creation",
+        "content": "Users can create an account by clicking on Sign Up."
+    },
+    {
+        "title": "Contact Support",
+        "content": "Users can contact support through the help center."
+    }
+]
