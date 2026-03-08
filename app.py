@@ -14,7 +14,7 @@ def chat():
     user_message= request.json["message"].lower()
 
     for doc in documents:
-        if user_message in doc["title"].lower():
+        if doc["title"].lower() in user_message:
             return jsonify({"reply": doc["content"]})
     return jsonify({"reply": "Sorry, I don't know the answer."})
 import os
