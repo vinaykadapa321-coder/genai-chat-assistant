@@ -1,3 +1,4 @@
+# 
 from flask import Flask, render_template, request, jsonify
 import google.generativeai as genai
 from dotenv import load_dotenv
@@ -7,10 +8,13 @@ import os
 # Load environment variables
 load_dotenv()
 
+# Create Flask application
 app = Flask(__name__)
 
 # Configure Gemini API
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+genai.configure(
+    api_key=os.getenv("GEMINI_API_KEY")
+)
 
 # Load Gemini Model
 model = genai.GenerativeModel("gemini-2.5-flash")
@@ -50,7 +54,6 @@ def chat():
 # Voice Chat
 @app.route("/voice", methods=["GET"])
 def voice():
-
     try:
         user_message = listen()
 
@@ -67,6 +70,12 @@ def voice():
         })
 
 
+# Run Flask application
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+
+    app.run(
+        host="0.0.0.0",
+        port=port,
+        debug=True
+    )
