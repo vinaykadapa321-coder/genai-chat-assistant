@@ -29,16 +29,12 @@ def chat():
         data = request.get_json()
 
         if not data:
-            return jsonify({
-                "reply": "Invalid request."
-            }), 400
+            return jsonify({"reply": "Invalid request."}), 400
 
         user_message = data.get("message", "").strip()
 
         if not user_message:
-            return jsonify({
-                "reply": "Please enter a message."
-            }), 400
+            return jsonify({"reply": "Please enter a message."}), 400
 
         response = client.models.generate_content(
             model=MODEL_NAME,
@@ -51,7 +47,6 @@ def chat():
 
     except Exception as e:
         print("Chat Error:", e)
-
         return jsonify({
             "reply": f"Error: {str(e)}"
         }), 500
