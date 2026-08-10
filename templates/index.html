@@ -1,16 +1,82 @@
-<!document html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<title>GenAI Chat Assistant</title>
-<link rel="stylesheet" href="/static/styles.css">
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>GenAI Chat Assistant</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='styles.css') }}"
+    >
 </head>
+
 <body>
-<h2>GenAI Chat Assitant</h2>
 
-<div id="chat-box"></div>
+    <div class="chat-container">
 
-<input type="text" id="user-input" placeholder="Type your question">
-<button onclick="sendMessage()">Send</button>
-<script src="/static/script.js"></script>
+        <!-- Header -->
+        <header class="chat-header">
+            <h1>🤖 GenAI Chat Assistant</h1>
+            <p>Ask me anything</p>
+        </header>
+
+
+        <!-- Chat Messages -->
+        <div
+            id="chatMessages"
+            class="chat-messages"
+        >
+            <div class="bot-message">
+                <strong>AI:</strong>
+                <span>
+                    Hello! 👋 How can I help you today?
+                </span>
+            </div>
+        </div>
+
+
+        <!-- Input Area -->
+        <div class="chat-input-container">
+
+            <input
+                type="text"
+                id="messageInput"
+                placeholder="Type your question..."
+                autocomplete="off"
+            >
+
+            <!-- Microphone Button -->
+            <button
+                id="micButton"
+                type="button"
+                onclick="startVoiceRecognition()"
+                title="Speak"
+            >
+                🎤
+            </button>
+
+            <!-- Send Button -->
+            <button
+                id="sendButton"
+                type="button"
+                onclick="sendMessage()"
+            >
+                Send
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
 </body>
 </html>

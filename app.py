@@ -1,23 +1,31 @@
-# 
 from flask import Flask, render_template, request, jsonify
-import google.generativeai as genai
+from google import genai
 from dotenv import load_dotenv
 from utils.voice import listen
 import os
 
+
 # Load environment variables
 load_dotenv()
+
 
 # Create Flask application
 app = Flask(__name__)
 
-# Configure Gemini API
-genai.configure(
-    api_key=os.getenv("GEMINI_API_KEY")
-)
 
-# Load Gemini Model
-model = genai.GenerativeModel("gemini-2.5-flash")
+# Get Gemini API key
+api_key = os.getenv("GEMINI_API_KEY")
+
+if not api_key:
+    raise ValueError("GEMINI_API_KEY is missing from the .env file")
+
+
+# Create Gemini client
+client = genai.Client(api_key=api_key)
+
+
+# Gemini model
+MODEL_NAME = "gemini-3.6-flash"
 
 
 # Home Page
@@ -32,23 +40,33 @@ def chat():
     try:
         data = request.get_json()
 
-        user_message = data.get("message")
+        if not data:
+            return jsonify({
+                "reply": "Invalid request."
+            }), 400
+
+        user_message = data.get("message", "").strip()
 
         if not user_message:
             return jsonify({
                 "reply": "Please enter a message."
-            })
+            }), 400
 
-        response = model.generate_content(user_message)
+        response = client.models.generate_content(
+            model=MODEL_NAME,
+            contents=user_message
+        )
 
         return jsonify({
             "reply": response.text
         })
 
     except Exception as e:
+        print("Chat Error:", e)
+
         return jsonify({
-            "reply": str(e)
-        })
+            "reply": f"Error: {str(e)}"
+        }), 500
 
 
 # Voice Chat
@@ -57,7 +75,15 @@ def voice():
     try:
         user_message = listen()
 
-        response = model.generate_content(user_message)
+        if not user_message:
+            return jsonify({
+                "reply": "I could not understand your voice."
+            }), 400
+
+        response = client.models.generate_content(
+            model=MODEL_NAME,
+            contents=user_message
+        )
 
         return jsonify({
             "user": user_message,
@@ -65,9 +91,11 @@ def voice():
         })
 
     except Exception as e:
+        print("Voice Error:", e)
+
         return jsonify({
-            "reply": str(e)
-        })
+            "reply": f"Error: {str(e)}"
+        }), 500
 
 
 # Run Flask application
