@@ -2,41 +2,27 @@ from flask import Flask, render_template, request, jsonify
 from google import genai
 import os
 
-
-# Create Flask application
 app = Flask(
     __name__,
     template_folder="../templates",
     static_folder="../static"
 )
 
-
-# Get Gemini API key
 api_key = os.getenv("GEMINI_API_KEY")
 
 if not api_key:
-    raise ValueError(
-        "GEMINI_API_KEY is missing from environment variables"
-    )
+    raise ValueError("GEMINI_API_KEY is missing from environment variables")
+
+client = genai.Client(api_key=api_key)
+
+MODEL_NAME = "gemini-2.5-flash"
 
 
-# Create Gemini client
-client = genai.Client(
-    api_key=api_key
-)
-
-
-# Gemini model
-MODEL_NAME = "gemini-3.6-flash"
-
-
-# Home page
 @app.route("/")
 def home():
     return render_template("index.html")
 
 
-# Text Chat
 @app.route("/chat", methods=["POST"])
 def chat():
     try:
