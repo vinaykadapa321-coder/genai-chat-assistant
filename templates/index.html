@@ -2,81 +2,116 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>GenAI Chat Assistant</title>
 
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='styles.css') }}"
-    >
+    <link rel="stylesheet" href="/static/styles.css">
+
+    <!-- Markdown parser -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 
 <body>
 
-    <div class="chat-container">
+    <div class="app-container">
 
         <!-- Header -->
-        <header class="chat-header">
-            <h1>🤖 GenAI Chat Assistant</h1>
-            <p>Ask me anything</p>
+        <header class="header">
+            <div class="logo">🤖</div>
+
+            <div>
+                <h1>GenAI Chat Assistant</h1>
+                <p>Your AI-powered voice and text assistant</p>
+            </div>
         </header>
 
+        <!-- Chat area -->
+        <main id="chatContainer" class="chat-container">
 
-        <!-- Chat Messages -->
-        <div
-            id="chatMessages"
-            class="chat-messages"
-        >
-            <div class="bot-message">
-                <strong>AI:</strong>
-                <span>
-                    Hello! 👋 How can I help you today?
-                </span>
+            <!-- Welcome message -->
+            <div class="message ai-message">
+                <div class="avatar">🤖</div>
+
+                <div class="message-content">
+                    <div class="message-name">AI Assistant</div>
+
+                    <div class="bubble">
+                        <p>
+                            Hello! 👋 I'm your GenAI Chat Assistant.
+                        </p>
+
+                        <p>
+                            Ask me anything using text or your microphone.
+                        </p>
+                    </div>
+                </div>
             </div>
+
+        </main>
+
+        <!-- Typing indicator -->
+        <div id="typingIndicator" class="typing-indicator hidden">
+            <span></span>
+            <span></span>
+            <span></span>
+            <p>AI is thinking...</p>
         </div>
 
+        <!-- Input area -->
+        <section class="input-section">
 
-        <!-- Input Area -->
-        <div class="chat-input-container">
+            <div class="input-wrapper">
 
-            <input
-                type="text"
-                id="messageInput"
-                placeholder="Type your question..."
-                autocomplete="off"
-            >
+                <textarea
+                    id="messageInput"
+                    placeholder="Ask me anything..."
+                    rows="1"
+                    autocomplete="off"
+                ></textarea>
 
-            <!-- Microphone Button -->
-            <button
-                id="micButton"
-                type="button"
-                onclick="startVoiceRecognition()"
-                title="Speak"
-            >
-                🎤
-            </button>
+                <!-- Voice button -->
+                <button
+                    id="voiceButton"
+                    class="icon-button voice-button"
+                    title="Speak"
+                    type="button"
+                >
+                    🎤
+                </button>
 
-            <!-- Send Button -->
-            <button
-                id="sendButton"
-                type="button"
-                onclick="sendMessage()"
-            >
-                Send
-            </button>
+                <!-- Send button -->
+                <button
+                    id="sendButton"
+                    class="send-button"
+                    type="button"
+                >
+                    Send
+                </button>
 
-        </div>
+            </div>
+
+            <div class="bottom-actions">
+
+                <button
+                    id="clearButton"
+                    class="clear-button"
+                    type="button"
+                >
+                    🗑️ Clear Chat
+                </button>
+
+                <span class="status">
+                    Powered by Gemini
+                </span>
+
+            </div>
+
+        </section>
 
     </div>
 
-
-    <!-- JavaScript -->
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="/static/script.js"></script>
 
 </body>
 </html>

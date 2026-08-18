@@ -1,20 +1,115 @@
-// ==========================================
-// GenAI Chat Assistant - script.js
-// ==========================================
+const chatContainer = document.getElementById("chatContainer");
+const messageInput = document.getElementById("messageInput");
+const sendButton = document.getElementById("sendButton");
+const voiceButton = document.getElementById("voiceButton");
+const clearButton = document.getElementById("clearButton");
+const typingIndicator = document.getElementById("typingIndicator");
 
 
-// ==========================================
-// Send Text Message
-// ==========================================
+// --------------------------------------------------
+// Add message to chat
+// --------------------------------------------------
+
+function addMessage(sender, message, isUser = false) {
+
+    const messageElement = document.createElement("div");
+
+    messageElement.className = isUser
+        ? "message user-message"
+        : "message ai-message";
+
+    const avatar = isUser ? "👤" : "🤖";
+
+    let formattedMessage;
+
+    if (isUser) {
+        formattedMessage = escapeHtml(message);
+    } else {
+        // Convert Markdown to HTML
+        formattedMessage = marked.parse(message);
+    }
+
+    messageElement.innerHTML = `
+        <div class="avatar">
+            ${avatar}
+        </div>
+
+        <div class="message-content">
+
+            <div class="message-name">
+                ${isUser ? "You" : "AI Assistant"}
+            </div>
+
+            <div class="bubble">
+                ${formattedMessage}
+            </div>
+
+        </div>
+    `;
+
+    chatContainer.appendChild(messageElement);
+
+    scrollToBottom();
+}
+
+
+// --------------------------------------------------
+// Escape HTML for user messages
+// --------------------------------------------------
+
+function escapeHtml(text) {
+
+    const div = document.createElement("div");
+
+    div.textContent = text;
+
+    return div.innerHTML;
+}
+
+
+// --------------------------------------------------
+// Scroll chat to bottom
+// --------------------------------------------------
+
+function scrollToBottom() {
+
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+
+// --------------------------------------------------
+// Show loading
+// --------------------------------------------------
+
+function showLoading() {
+
+    typingIndicator.classList.remove("hidden");
+
+    sendButton.disabled = true;
+    voiceButton.disabled = true;
+
+    scrollToBottom();
+}
+
+
+// --------------------------------------------------
+// Hide loading
+// --------------------------------------------------
+
+function hideLoading() {
+
+    typingIndicator.classList.add("hidden");
+
+    sendButton.disabled = false;
+    voiceButton.disabled = false;
+}
+
+
+// --------------------------------------------------
+// Send text message
+// --------------------------------------------------
 
 async function sendMessage() {
-    const messageInput = document.getElementById("messageInput");
-    const sendButton = document.getElementById("sendButton");
-
-    if (!messageInput) {
-        console.error("messageInput not found");
-        return;
-    }
 
     const message = messageInput.value.trim();
 
@@ -22,200 +117,205 @@ async function sendMessage() {
         return;
     }
 
-    // Show user's message
-    addMessage("You", message);
+    // Display user message
+    addMessage("You", message, true);
 
     // Clear input
     messageInput.value = "";
 
-    // Disable send button
-    if (sendButton) {
-        sendButton.disabled = true;
-        sendButton.textContent = "Sending...";
-    }
+    // Reset textarea height
+    messageInput.style.height = "auto";
+
+    showLoading();
 
     try {
+
         const response = await fetch("/chat", {
+
             method: "POST",
+
             headers: {
                 "Content-Type": "application/json"
             },
+
             body: JSON.stringify({
                 message: message
             })
         });
 
-        if (!response.ok) {
-            throw new Error("Server error: " + response.status);
-        }
 
         const data = await response.json();
 
-        if (data.reply) {
-            addMessage("AI", data.reply);
-        } else {
-            addMessage("AI", "No response received.");
+
+        if (!response.ok) {
+
+            addMessage(
+                "AI Assistant",
+                data.reply || "Something went wrong."
+            );
+
+            return;
         }
 
-    } catch (error) {
-        console.error("Chat Error:", error);
 
         addMessage(
-            "AI",
-            "Sorry, something went wrong. Please try again."
+            "AI Assistant",
+            data.reply || "No response received."
         );
 
-    } finally {
-        // Enable send button
-        if (sendButton) {
-            sendButton.disabled = false;
-            sendButton.textContent = "Send";
-        }
+    }
 
-        messageInput.focus();
+    catch (error) {
+
+        console.error("Chat error:", error);
+
+        addMessage(
+            "AI Assistant",
+            "❌ Unable to connect to the server. Please try again."
+        );
+    }
+
+    finally {
+
+        hideLoading();
     }
 }
 
 
-// ==========================================
-// Voice Assistant
-// ==========================================
+// --------------------------------------------------
+// Voice input
+// --------------------------------------------------
 
-async function startVoiceRecognition() {
-    const micButton = document.getElementById("micButton");
-    const messageInput = document.getElementById("messageInput");
+async function startVoice() {
+
+    showLoading();
+
+    voiceButton.classList.add("recording");
+
+    voiceButton.innerHTML = "🔴";
 
     try {
-        // Change microphone button
-        if (micButton) {
-            micButton.textContent = "🔴";
-            micButton.disabled = true;
-        }
 
-        console.log("Starting voice recognition...");
-
-        // Call Flask /voice endpoint
-        const response = await fetch("/voice", {
-            method: "GET"
-        });
-
-        if (!response.ok) {
-            throw new Error("Voice server error: " + response.status);
-        }
+        const response = await fetch("/voice");
 
         const data = await response.json();
 
-        console.log("Voice response:", data);
 
         // Display recognized speech
         if (data.user) {
-            if (messageInput) {
-                messageInput.value = data.user;
-            }
 
-            addMessage("You", data.user);
+            addMessage(
+                "You",
+                data.user,
+                true
+            );
         }
+
 
         // Display AI response
         if (data.reply) {
-            addMessage("AI", data.reply);
-        } else {
+
             addMessage(
-                "AI",
-                "I couldn't generate a response."
+                "AI Assistant",
+                data.reply
             );
         }
 
-    } catch (error) {
-        console.error("Voice Error:", error);
+    }
+
+    catch (error) {
+
+        console.error("Voice error:", error);
 
         addMessage(
-            "AI",
-            "Could not process your voice. Please try again."
+            "AI Assistant",
+            "❌ Voice processing failed. Please try again."
         );
+    }
 
-    } finally {
-        // Reset microphone button
-        if (micButton) {
-            micButton.textContent = "🎤";
-            micButton.disabled = false;
-        }
+    finally {
 
-        console.log("Voice recognition finished.");
+        hideLoading();
+
+        voiceButton.classList.remove("recording");
+
+        voiceButton.innerHTML = "🎤";
     }
 }
 
 
-// ==========================================
-// Add Message to Chat
-// ==========================================
+// --------------------------------------------------
+// Clear chat
+// --------------------------------------------------
 
-function addMessage(sender, message) {
-    const chatMessages =
-        document.getElementById("chatMessages");
+function clearChat() {
 
-    if (!chatMessages) {
-        console.error("chatMessages element not found");
-        return;
-    }
+    chatContainer.innerHTML = `
+        <div class="message ai-message">
 
-    const messageDiv =
-        document.createElement("div");
+            <div class="avatar">
+                🤖
+            </div>
 
-    // Add different class for user and AI
-    if (sender === "You") {
-        messageDiv.className = "user-message";
-    } else {
-        messageDiv.className = "bot-message";
-    }
+            <div class="message-content">
 
-    const strong =
-        document.createElement("strong");
+                <div class="message-name">
+                    AI Assistant
+                </div>
 
-    strong.textContent = sender + ":";
+                <div class="bubble">
 
-    const span =
-        document.createElement("span");
+                    <p>
+                        Hello! 👋
+                    </p>
 
-    span.textContent = " " + message;
+                    <p>
+                        Chat cleared. How can I help you?
+                    </p>
 
-    messageDiv.appendChild(strong);
-    messageDiv.appendChild(span);
+                </div>
 
-    chatMessages.appendChild(messageDiv);
+            </div>
 
-    // Scroll to latest message
-    chatMessages.scrollTop =
-        chatMessages.scrollHeight;
+        </div>
+    `;
 }
 
 
-// ==========================================
-// Enter Key Support
-// ==========================================
+// --------------------------------------------------
+// Enter key
+// --------------------------------------------------
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
+messageInput.addEventListener("keydown", function(event) {
 
-        const messageInput =
-            document.getElementById("messageInput");
+    if (event.key === "Enter" && !event.shiftKey) {
 
-        if (messageInput) {
+        event.preventDefault();
 
-            messageInput.addEventListener(
-                "keydown",
-                function (event) {
-
-                    if (event.key === "Enter") {
-
-                        event.preventDefault();
-
-                        sendMessage();
-                    }
-                }
-            );
-        }
-
+        sendMessage();
     }
-);
+});
+
+
+// --------------------------------------------------
+// Auto resize textarea
+// --------------------------------------------------
+
+messageInput.addEventListener("input", function() {
+
+    this.style.height = "auto";
+
+    this.style.height =
+        Math.min(this.scrollHeight, 150) + "px";
+});
+
+
+// --------------------------------------------------
+// Button events
+// --------------------------------------------------
+
+sendButton.addEventListener("click", sendMessage);
+
+voiceButton.addEventListener("click", startVoice);
+
+clearButton.addEventListener("click", clearChat);

@@ -8,10 +8,10 @@ def listen():
         with sr.Microphone() as source:
             print("Speak now...")
 
-            # Adjust for background noise
+            # Reduce background-noise problems
             recognizer.adjust_for_ambient_noise(source, duration=1)
 
-            # Listen to the microphone
+            # Listen for speech
             audio = recognizer.listen(
                 source,
                 timeout=5,
@@ -22,16 +22,18 @@ def listen():
         text = recognizer.recognize_google(audio)
 
         print("You said:", text)
-
         return text
 
     except sr.WaitTimeoutError:
+        print("No speech detected.")
         return "No speech detected. Please try again."
 
     except sr.UnknownValueError:
+        print("Could not understand the audio.")
         return "Sorry, I couldn't understand your voice."
 
-    except sr.RequestError:
+    except sr.RequestError as e:
+        print("Speech recognition service error:", e)
         return "Speech Recognition service unavailable."
 
     except Exception as e:
